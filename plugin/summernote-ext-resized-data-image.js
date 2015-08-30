@@ -27,7 +27,6 @@
 	 *
 	 * dependencies:
 	 * exif.js (https://github.com/exif-js/exif-js)
-	 * binaryajax.js (https://github.com/jseidelin/binaryajax)
 	 *
 	 * this blog post helped a lot:
 	 * http://chariotsolutions.com/blog/post/take-and-manipulate-photo-with-web-page/
@@ -36,10 +35,8 @@
 		name: 'resizedDataImage',
 		buttons: {
 			resizedDataImage: function () {
-				return template.button('<div class="fileinput-button">' +
-					'<i class="fa fa-camera"></i>' +
-					'<input type="file" name="file" accept="image/*">' +
-					'</div>', {
+				return template.button('<i class="fa fa-camera"></i>' +
+					'<input type="file" name="file" accept="image/*">', {
 					event: 'resizedDataImage',
 					hide: true
 				});
@@ -65,14 +62,12 @@
 
 						var width = img.width,
 							height = img.height,
-							binaryReader = new FileReader();
+							canvas = document.createElement('canvas');
 
-						binaryReader.onloadend = function (d) {
-							var exif = EXIF.readFromBinaryFile(d.target.result),
-								canvas = document.createElement('canvas');
+						EXIF.getData(imageFile, function () {
 
 							// check if image is rotated by 90° or 270°
-							switch (exif.Orientation) {
+							switch (EXIF.getTag(this, 'Orientation')) {
 								case 8:
 									width = img.height;
 									height = img.width;
@@ -112,32 +107,44 @@
 
 							// transform flipped or rotated images
 							// see: http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/
-							switch (exif.Orientation) {
+							switch (EXIF.getTag(this, 'Orientation')) {
 								case 8:
+									// rotate left
 									ctx.setTransform(0, -1, 1, 0, 0, height);
 									ctx.drawImage(img, 0, 0, height, width);
 									break;
 								case 7:
 									// TODO: flip horizontally and rotate left
+									ctx.setTransform(0, -1, 1, 0, 0, height);
+									ctx.drawImage(img, 0, 0, height, width);
 									break;
 								case 6:
+									// rotate right
 									ctx.setTransform(0, 1, -1, 0, width, 0);
 									ctx.drawImage(img, 0, 0, height, width);
 									break;
 								case 5:
 									// TODO: flip horizontally and rotate right
+									ctx.setTransform(0, 1, -1, 0, width, 0);
+									ctx.drawImage(img, 0, 0, height, width);
 									break;
 								case 4:
-									// TODO: flip horizontally and vertically
-									break;
-								case 3:
+									// flip horizontally and vertically
 									ctx.setTransform(1, 0, 0, -1, 0, height);
 									ctx.drawImage(img, 0, 0, width, height);
 									break;
+								case 3:
+									// flip horizontally
+									ctx.setTransform(-1, 0, 0, -1, width, height);
+									ctx.drawImage(img, 0, 0, width, height);
+									break;
 								case 2:
-									// TODO: flip vertically
+									// flip vertically
+									ctx.setTransform(-1, 0, 0, 1, width, 0);
+									ctx.drawImage(img, 0, 0, width, height);
 									break;
 								case 1:
+									// no transformation
 									ctx.setTransform(1, 0, 0, 1, 0, 0);
 									ctx.drawImage(img, 0, 0, width, height);
 									break;
@@ -149,10 +156,7 @@
 
 							var data = canvas.toDataURL(type, compression);
 							editor.insertImage($editable, data);
-						};
-
-						// read the file into a binary ArrayBuffer
-						binaryReader.readAsArrayBuffer(imageFile);
+						});
 					};
 
 					// unbind trigger and unset value
