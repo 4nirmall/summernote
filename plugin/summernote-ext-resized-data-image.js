@@ -11,7 +11,8 @@
 
 	// predefined settings
 	var max_width = 800,
-		max_height = 800;
+		max_height = 800,
+		quality = 0.9;
 
 	// template
 	var template = $.summernote.renderer.getTemplate();
@@ -129,7 +130,7 @@
 								ctx.drawImage(image, 0, 0, width, height);
 							}
 
-							var data = canvas.toDataURL(imageFile.type, 1);
+							var data = canvas.toDataURL(imageFile.type, quality);
 							editor.insertImage($editable, data, imageFile.name);
 						});
 					};
