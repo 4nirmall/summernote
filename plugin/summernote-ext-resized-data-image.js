@@ -11,10 +11,7 @@
 
 	// predefined settings
 	var max_width = 800,
-		max_height = 800,
-		type = 'image/jpeg',
-		compression = 0.9,
-		fill_style = 'white';
+		max_height = 800;
 
 	// template
 	var template = $.summernote.renderer.getTemplate();
@@ -52,38 +49,24 @@
 					}
 
 					var imageFile = this.files[0],
-						img = new Image(),
+						image = new Image(),
 						url = window.URL ? window.URL : window.webkitURL;
 
-					img.src = url.createObjectURL(imageFile);
-					img.onload = function (e) {
+					image.src = url.createObjectURL(imageFile);
+					image.onload = function (e) {
 						// release URL object as soon as it is unused
 						url.revokeObjectURL(this.src);
 
-						var width = img.width,
-							height = img.height,
+						var width = image.width,
+							height = image.height,
 							canvas = document.createElement('canvas');
 
 						EXIF.getData(imageFile, function () {
 
 							// check if image is rotated by 90° or 270°
-							switch (EXIF.getTag(this, 'Orientation')) {
-								case 8:
-									width = img.height;
-									height = img.width;
-									break;
-								case 7:
-									width = img.height;
-									height = img.width;
-									break;
-								case 6:
-									width = img.height;
-									height = img.width;
-									break;
-								case 5:
-									width = img.height;
-									height = img.width;
-									break;
+							if (EXIF.getTag(this, 'Orientation') >= 5) {
+								width = image.height;
+								height = image.width;
 							}
 
 							// apply maximum resolution
@@ -102,7 +85,7 @@
 							canvas.height = height;
 
 							var ctx = canvas.getContext('2d');
-							ctx.fillStyle = fill_style;
+							ctx.fillStyle = 'transparent';
 							ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 							// transform flipped or rotated images
@@ -110,52 +93,52 @@
 							switch (EXIF.getTag(this, 'Orientation')) {
 								case 8:
 									// rotate left
-									ctx.setTransform(0, -1, 1, 0, 0, height);
-									ctx.drawImage(img, 0, 0, height, width);
+									ctx.transform(0, -1, 1, 0, 0, height);
 									break;
 								case 7:
-									// TODO: flip horizontally and rotate left
-									ctx.setTransform(0, -1, 1, 0, 0, height);
-									ctx.drawImage(img, 0, 0, height, width);
+									// flip vertically and rotate left
+									ctx.transform(-1, 0, 0, 1, width, 0);
+									ctx.transform(0, -1, 1, 0, 0, height);
 									break;
 								case 6:
 									// rotate right
-									ctx.setTransform(0, 1, -1, 0, width, 0);
-									ctx.drawImage(img, 0, 0, height, width);
+									ctx.transform(0, 1, -1, 0, width, 0);
 									break;
 								case 5:
-									// TODO: flip horizontally and rotate right
-									ctx.setTransform(0, 1, -1, 0, width, 0);
-									ctx.drawImage(img, 0, 0, height, width);
+									// flip vertically and rotate right
+									ctx.transform(-1, 0, 0, 1, width, 0);
+									ctx.transform(0, 1, -1, 0, width, 0);
 									break;
 								case 4:
 									// flip horizontally and vertically
-									ctx.setTransform(1, 0, 0, -1, 0, height);
-									ctx.drawImage(img, 0, 0, width, height);
+									ctx.transform(1, 0, 0, -1, 0, height);
 									break;
 								case 3:
 									// flip horizontally
-									ctx.setTransform(-1, 0, 0, -1, width, height);
-									ctx.drawImage(img, 0, 0, width, height);
+									ctx.transform(-1, 0, 0, -1, width, height);
 									break;
 								case 2:
 									// flip vertically
-									ctx.setTransform(-1, 0, 0, 1, width, 0);
-									ctx.drawImage(img, 0, 0, width, height);
+									ctx.transform(-1, 0, 0, 1, width, 0);
 									break;
 								case 1:
 									// no transformation
-									ctx.setTransform(1, 0, 0, 1, 0, 0);
-									ctx.drawImage(img, 0, 0, width, height);
+									ctx.transform(1, 0, 0, 1, 0, 0);
 									break;
 								default:
-									ctx.setTransform(1, 0, 0, 1, 0, 0);
-									ctx.drawImage(img, 0, 0, width, height);
+									ctx.transform(1, 0, 0, 1, 0, 0);
 									break;
 							}
 
-							var data = canvas.toDataURL(type, compression);
-							editor.insertImage($editable, data);
+							// draw image into the canvas
+							if (EXIF.getTag(this, 'Orientation') >= 5) {
+								ctx.drawImage(image, 0, 0, height, width);
+							} else {
+								ctx.drawImage(image, 0, 0, width, height);
+							}
+
+							var data = canvas.toDataURL(imageFile.type, 1);
+							editor.insertImage($editable, data, imageFile.name);
 						});
 					};
 
