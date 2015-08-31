@@ -92,41 +92,33 @@
 							// see: http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/
 							switch (EXIF.getTag(this, 'Orientation')) {
 								case 8:
-									// rotate left
-									ctx.transform(0, -1, 1, 0, 0, height);
+									ctx.transform(0, -1, 1, 0, 0, height); // rotate left
 									break;
 								case 7:
-									// flip vertically and rotate left
-									ctx.transform(-1, 0, 0, 1, width, 0);
-									ctx.transform(0, -1, 1, 0, 0, height);
+									ctx.transform(-1, 0, 0, 1, width, 0); // flip vertically
+									ctx.transform(0, -1, 1, 0, 0, height); // rotate left
 									break;
 								case 6:
-									// rotate right
-									ctx.transform(0, 1, -1, 0, width, 0);
+									ctx.transform(0, 1, -1, 0, width, 0); // rotate right
 									break;
 								case 5:
-									// flip vertically and rotate right
-									ctx.transform(-1, 0, 0, 1, width, 0);
-									ctx.transform(0, 1, -1, 0, width, 0);
+									ctx.transform(-1, 0, 0, 1, width, 0); // flip vertically
+									ctx.transform(0, 1, -1, 0, width, 0); // rotate right
 									break;
 								case 4:
-									// flip horizontally and vertically
-									ctx.transform(1, 0, 0, -1, 0, height);
+									ctx.transform(1, 0, 0, -1, 0, height); // flip horizontally and vertically
 									break;
 								case 3:
-									// flip horizontally
-									ctx.transform(-1, 0, 0, -1, width, height);
+									ctx.transform(-1, 0, 0, -1, width, height); // flip horizontally
 									break;
 								case 2:
-									// flip vertically
-									ctx.transform(-1, 0, 0, 1, width, 0);
+									ctx.transform(-1, 0, 0, 1, width, 0); // flip vertically
 									break;
 								case 1:
-									// no transformation
-									ctx.transform(1, 0, 0, 1, 0, 0);
+									ctx.transform(1, 0, 0, 1, 0, 0); // no transformation
 									break;
 								default:
-									ctx.transform(1, 0, 0, 1, 0, 0);
+									ctx.transform(1, 0, 0, 1, 0, 0); // no transformation
 									break;
 							}
 
